@@ -10,13 +10,38 @@ function AddRecipe() {
 
     const categories = ['Dessert', 'Main Course', 'Appetizer', 'Salad', 'Beverage']; // Example categories
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission logic here
+        
         const recipeData = { recipeName, ingredients, instructions, category, hashtags, image };
-        console.log('Recipe added:', recipeData);
-        // You can send the data to your backend or save it as required
+    
+        try {
+            const response = await fetch('http://localhost:5000/api/recipes/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(recipeData),
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert('Recipe added successfully!');
+                setRecipeName('');
+                setIngredients('');
+                setInstructions('');
+                setCategory('');
+                setHashtags('');
+                setImage(null);
+            } else {
+                alert(data.message || 'Error adding recipe');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong!');
+        }
     };
+    
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];

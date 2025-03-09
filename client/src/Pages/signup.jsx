@@ -5,28 +5,60 @@ function SignUp() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle sign-up logic here
-        if (password === confirmPassword) {
-            console.log('Signing up with:', { username, email, password });
-        } else {
-            console.log('Passwords do not match');
+
+        // Basic email validation
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailPattern.test(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
+        // Check password match
+        if (password !== confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+
+        setError('');
+        setSuccessMessage('');
+
+        try {
+            const response = await fetch('http://localhost:5000/api/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password
+                }),
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                setError(data.error || 'Something went wrong');
+            } else {
+                setSuccessMessage(data.message);
+            }
+        } catch (error) {
+            setError('Network error, please try again later');
         }
     };
 
     return (
-        <div
-            className="d-flex justify-content-center align-items-center min-vh-100"
-            style={{ backgroundColor: '#f8f9fa' }} // Optional background color
-        >
-            <div
-                className="container mt-5 shadow-lg p-4"
-                style={{ width: '25rem', borderRadius: '8px', backgroundColor: 'white' }}
-            >
+        <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ backgroundColor: '#f8f9fa' }}>
+            <div className="container mt-5 shadow-lg p-4" style={{ width: '25rem', borderRadius: '8px', backgroundColor: 'white' }}>
                 <h2>Sign Up</h2>
                 <form onSubmit={handleSubmit}>
+                    {error && <div className="alert alert-danger">{error}</div>}
+                    {successMessage && <div className="alert alert-success">{successMessage}</div>}
                     <div className="mb-3">
                         <label htmlFor="username" className="form-label">Username</label>
                         <input
